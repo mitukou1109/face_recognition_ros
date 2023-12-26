@@ -14,7 +14,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 class FaceIdentifier(rclpy.node.Node):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("face_identifier")
 
         self.known_face_encodings: list[np.ndarray] = []
@@ -48,22 +48,22 @@ class FaceIdentifier(rclpy.node.Node):
 
         self.cv_bridge = cv_bridge.CvBridge()
 
-        self.result_detection_pub = self.create_publisher(
-            vision_msgs.msg.Detection2DArray, "~/result/detection", 5
+        self.detections_pub = self.create_publisher(
+            vision_msgs.msg.Detection2DArray, "~/detections", 5
         )
         self.result_image_pub = self.create_publisher(
-            sensor_msgs.msg.Image, "~/result/image_raw", 5
+            sensor_msgs.msg.Image, "~/result_image", 5
         )
-        image_sub_qos = rclpy.qos.qos_profile_sensor_data
-        image_sub_qos.depth = 1
-        self.image_sub = self.create_subscription(
+        source_image_sub_qos = rclpy.qos.qos_profile_sensor_data
+        source_image_sub_qos.depth = 1
+        self.source_image_sub = self.create_subscription(
             sensor_msgs.msg.Image,
             "/image_raw",
-            self.image_callback,
-            image_sub_qos,
+            self.source_image_callback,
+            source_image_sub_qos,
         )
 
-    def image_callback(self, msg: sensor_msgs.msg.Image):
+    def source_image_callback(self, msg: sensor_msgs.msg.Image) -> None:
         image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         result_image = image.copy()
         resize_ratio = 180 / image.shape[0]
@@ -73,7 +73,7 @@ class FaceIdentifier(rclpy.node.Node):
         face_locations = face_recognition.face_locations(image)
         face_encodings = face_recognition.face_encodings(image, face_locations)
 
-        detection_msg = vision_msgs.msg.Detection2DArray()
+        detections_msg = vision_msgs.msg.Detection2DArray()
         for face_location, face_encoding in zip(face_locations, face_encodings):
             matches = face_recognition.compare_faces(
                 self.known_face_encodings, face_encoding
@@ -94,7 +94,7 @@ class FaceIdentifier(rclpy.node.Node):
                     size_x=float(face_location[1] - face_location[3]),
                     size_y=float(face_location[2] - face_location[0]),
                 )
-                detection_msg.detections.append(
+                detections_msg.detections.append(
                     vision_msgs.msg.Detection2D(bbox=bbox, id=face_name)
                 )
                 cv2.rectangle(
@@ -121,9 +121,9 @@ class FaceIdentifier(rclpy.node.Node):
                     thickness=1,
                 )
 
-        detection_msg.header.stamp = self.get_clock().now().to_msg()
-        detection_msg.header.frame_id = msg.header.frame_id
-        self.result_detection_pub.publish(detection_msg)
+        detections_msg.header.stamp = self.get_clock().now().to_msg()
+        detections_msg.header.frame_id = msg.header.frame_id
+        self.detections_pub.publish(detections_msg)
 
         result_image_msg = self.cv_bridge.cv2_to_imgmsg(result_image, "bgr8")
         result_image_msg.header.stamp = self.get_clock().now().to_msg()
@@ -131,7 +131,7 @@ class FaceIdentifier(rclpy.node.Node):
         self.result_image_pub.publish(result_image_msg)
 
 
-def main(args=None):
+def main(args: list[str] = None):
     rclpy.init(args=args)
     node = FaceIdentifier()
     rclpy.spin(node)
