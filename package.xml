@@ -7,6 +7,11 @@
   <maintainer email="mitukou1109@gmail.com">Mitsuhiro Sakamoto</maintainer>
   <license>BSD</license>
 
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>vision_msgs</exec_depend>
+
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
