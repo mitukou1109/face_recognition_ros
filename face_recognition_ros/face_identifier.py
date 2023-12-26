@@ -65,7 +65,8 @@ class FaceIdentifier(rclpy.node.Node):
 
     def image_callback(self, msg: sensor_msgs.msg.Image):
         image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
-        resize_ratio = 320 / image.shape[0]
+        result_image = image.copy()
+        resize_ratio = 180 / image.shape[0]
         image = cv2.resize(image, dsize=None, fx=resize_ratio, fy=resize_ratio)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
@@ -83,34 +84,35 @@ class FaceIdentifier(rclpy.node.Node):
             best_match_index = np.argmin(distances)
             if matches[best_match_index]:
                 face_name = self.known_face_names[best_match_index]
+                face_location = [round(x / resize_ratio) for x in face_location]
                 face_center = vision_msgs.msg.Point2D(
-                    x=(face_location[1] + face_location[3]) / (2 * resize_ratio),
-                    y=(face_location[0] + face_location[2]) / (2 * resize_ratio),
+                    x=(face_location[1] + face_location[3]) / 2,
+                    y=(face_location[0] + face_location[2]) / 2,
                 )
                 bbox = vision_msgs.msg.BoundingBox2D(
                     center=vision_msgs.msg.Pose2D(position=face_center),
-                    size_x=(face_location[1] - face_location[3]) / resize_ratio,
-                    size_y=(face_location[2] - face_location[0]) / resize_ratio,
+                    size_x=float(face_location[1] - face_location[3]),
+                    size_y=float(face_location[2] - face_location[0]),
                 )
                 detection_msg.detections.append(
                     vision_msgs.msg.Detection2D(bbox=bbox, id=face_name)
                 )
                 cv2.rectangle(
-                    image,
+                    result_image,
                     (face_location[1], face_location[0]),
                     (face_location[3], face_location[2]),
-                    color=(255, 0, 0),
+                    color=(0, 0, 255),
                     thickness=2,
                 )
                 cv2.rectangle(
-                    image,
+                    result_image,
                     (face_location[3], face_location[2] - 35),
                     (face_location[1], face_location[2]),
-                    color=(255, 0, 0),
+                    color=(0, 0, 255),
                     thickness=cv2.FILLED,
                 )
                 cv2.putText(
-                    image,
+                    result_image,
                     face_name,
                     (face_location[3], face_location[2] - 5),
                     fontFace=cv2.FONT_HERSHEY_DUPLEX,
@@ -123,7 +125,7 @@ class FaceIdentifier(rclpy.node.Node):
         detection_msg.header.frame_id = msg.header.frame_id
         self.result_detection_pub.publish(detection_msg)
 
-        result_image_msg = self.cv_bridge.cv2_to_imgmsg(image, "rgb8")
+        result_image_msg = self.cv_bridge.cv2_to_imgmsg(result_image, "bgr8")
         result_image_msg.header.stamp = self.get_clock().now().to_msg()
         result_image_msg.header.frame_id = msg.header.frame_id
         self.result_image_pub.publish(result_image_msg)
