@@ -19,7 +19,7 @@ KNOWN_FACE_DIR = os.path.join(
 )
 os.makedirs(KNOWN_FACE_DIR, exist_ok=True)
 
-file_name, file_ext = os.path.splitext(sys.argv[1])
+file_name, file_ext = os.path.splitext(os.path.basename(sys.argv[1]))
 face_name = sys.argv[2] if len(sys.argv) >= 3 else file_name
 shutil.copyfile(
     sys.argv[1],
