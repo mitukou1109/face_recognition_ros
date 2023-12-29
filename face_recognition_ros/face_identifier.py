@@ -48,6 +48,8 @@ class FaceIdentifier(rclpy.node.Node):
 
         self.cv_bridge = cv_bridge.CvBridge()
 
+        self.declare_parameter("resize_height", 320)
+
         self.detections_pub = self.create_publisher(
             vision_msgs.msg.Detection2DArray, "~/detections", 5
         )
@@ -66,7 +68,10 @@ class FaceIdentifier(rclpy.node.Node):
     def source_image_callback(self, msg: sensor_msgs.msg.Image) -> None:
         image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         result_image = image.copy()
-        resize_ratio = 180 / image.shape[0]
+        resize_ratio = (
+            self.get_parameter("resize_height").get_parameter_value().integer_value
+            / image.shape[0]
+        )
         image = cv2.resize(image, dsize=None, fx=resize_ratio, fy=resize_ratio)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
