@@ -55,13 +55,21 @@ TODO
 
 Subscribed topics:
 
-|Name        |Type               |Description|
-|:-----------|:------------------|:----------|
-|`/image_raw`|`sensor_msgs/Image`|Input image|
+| Name         | Type                | Description |
+| :----------- | :------------------ | :---------- |
+| `/image_raw` | `sensor_msgs/Image` | Input image |
 
 Published topics:
 
-|Name            |Type                          |Description                                              |
-|:---------------|:-----------------------------|:--------------------------------------------------------|
-|`~/detections`  |`vision_msgs/Detection2DArray`|Sequence of bounding box and name for each detected faces|
-|`~/result_image`|`sensor_msgs/Image`           |Input image with bounding boxes and names drawn          |
+| Name             | Type                           | Description                                               |
+| :--------------- | :----------------------------- | :-------------------------------------------------------- |
+| `~/detections`   | `vision_msgs/Detection2DArray` | Sequence of bounding box and name for each detected faces |
+| `~/result_image` | `sensor_msgs/Image`            | Input image with bounding boxes and names drawn           |
+
+## Parameters
+
+### `face_identifier`
+
+| Name            | Type | Default value | Description                                                       |
+| :-------------- | :--- | :------------ | :---------------------------------------------------------------- |
+| `resize_height` | int  | `320`         | Height to resize input image before encoding for making it faster |
