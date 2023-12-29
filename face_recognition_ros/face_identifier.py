@@ -44,7 +44,7 @@ class FaceIdentifier(rclpy.node.Node):
             )
 
         assert self.known_face_names, "No known face registered"
-        self.get_logger().info(f"Registered known faces: {self.known_face_names}")
+        self.get_logger().info(f"Loaded known faces: {self.known_face_names}")
 
         self.cv_bridge = cv_bridge.CvBridge()
 
