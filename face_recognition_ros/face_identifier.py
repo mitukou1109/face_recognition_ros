@@ -14,6 +14,16 @@ from ament_index_python.packages import get_package_share_directory
 
 
 class FaceIdentifier(rclpy.node.Node):
+    PALETTE = [
+        (0, 0, 255),
+        (0, 255, 0),
+        (255, 0, 0),
+        (255, 255, 0),
+        (255, 0, 255),
+        (0, 255, 255),
+        (255, 255, 255),
+    ]
+
     def __init__(self) -> None:
         super().__init__("face_identifier")
 
@@ -106,14 +116,14 @@ class FaceIdentifier(rclpy.node.Node):
                     result_image,
                     (face_location[1], face_location[0]),
                     (face_location[3], face_location[2]),
-                    color=(0, 0, 255),
+                    color=self.PALETTE[best_match_index % len(self.PALETTE)],
                     thickness=2,
                 )
                 cv2.rectangle(
                     result_image,
-                    (face_location[3], face_location[2] - 35),
+                    (face_location[3], face_location[2] - 50),
                     (face_location[1], face_location[2]),
-                    color=(0, 0, 255),
+                    color=self.PALETTE[best_match_index % len(self.PALETTE)],
                     thickness=cv2.FILLED,
                 )
                 cv2.putText(
@@ -121,9 +131,9 @@ class FaceIdentifier(rclpy.node.Node):
                     face_name,
                     (face_location[3], face_location[2] - 5),
                     fontFace=cv2.FONT_HERSHEY_DUPLEX,
-                    fontScale=1.0,
-                    color=(255, 255, 255),
-                    thickness=1,
+                    fontScale=1.5,
+                    color=(0, 0, 0),
+                    thickness=2,
                 )
 
         detections_msg.header.stamp = self.get_clock().now().to_msg()
