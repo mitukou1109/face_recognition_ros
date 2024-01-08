@@ -53,7 +53,11 @@ class FaceIdentifier(rclpy.node.Node):
                 os.path.splitext(os.path.basename(known_face_image_file))[0]
             )
 
-        assert self.known_face_names, "No known face registered"
+        if not self.known_face_names:
+            self.get_logger().error("No known face registered, exiting...")
+            self.destroy_node()
+            exit(1)
+
         self.get_logger().info(f"Loaded known faces: {self.known_face_names}")
 
         self.cv_bridge = cv_bridge.CvBridge()
