@@ -35,6 +35,7 @@ class FaceIdentifier(rclpy.node.Node):
 
         self.cv_bridge = cv_bridge.CvBridge()
 
+        self.declare_parameter("publish_result_image", True)
         self.declare_parameter("resize_height", 320)
 
         self.detections_pub = self.create_publisher(
@@ -56,6 +57,11 @@ class FaceIdentifier(rclpy.node.Node):
         result_image = image.copy()
 
         if self.known_face_encodings:
+            publish_result_image = (
+                self.get_parameter("publish_result_image")
+                .get_parameter_value()
+                .bool_value
+            )
             resize_ratio = (
                 self.get_parameter("resize_height").get_parameter_value().integer_value
                 / image.shape[0]
@@ -90,38 +96,41 @@ class FaceIdentifier(rclpy.node.Node):
                     detections_msg.detections.append(
                         vision_msgs.msg.Detection2D(bbox=bbox, id=face_name)
                     )
-                    cv2.rectangle(
-                        result_image,
-                        (face_location[1], face_location[0]),
-                        (face_location[3], face_location[2]),
-                        color=self.PALETTE[best_match_index % len(self.PALETTE)],
-                        thickness=2,
-                    )
-                    cv2.rectangle(
-                        result_image,
-                        (face_location[3], face_location[2] - 50),
-                        (face_location[1], face_location[2]),
-                        color=self.PALETTE[best_match_index % len(self.PALETTE)],
-                        thickness=cv2.FILLED,
-                    )
-                    cv2.putText(
-                        result_image,
-                        face_name,
-                        (face_location[3], face_location[2] - 5),
-                        fontFace=cv2.FONT_HERSHEY_DUPLEX,
-                        fontScale=1.5,
-                        color=(0, 0, 0),
-                        thickness=2,
-                    )
+
+                    if publish_result_image:
+                        cv2.rectangle(
+                            result_image,
+                            (face_location[1], face_location[0]),
+                            (face_location[3], face_location[2]),
+                            color=self.PALETTE[best_match_index % len(self.PALETTE)],
+                            thickness=2,
+                        )
+                        cv2.rectangle(
+                            result_image,
+                            (face_location[3], face_location[2] - 50),
+                            (face_location[1], face_location[2]),
+                            color=self.PALETTE[best_match_index % len(self.PALETTE)],
+                            thickness=cv2.FILLED,
+                        )
+                        cv2.putText(
+                            result_image,
+                            face_name,
+                            (face_location[3], face_location[2] - 5),
+                            fontFace=cv2.FONT_HERSHEY_DUPLEX,
+                            fontScale=1.5,
+                            color=(0, 0, 0),
+                            thickness=2,
+                        )
 
             detections_msg.header.stamp = self.get_clock().now().to_msg()
             detections_msg.header.frame_id = msg.header.frame_id
             self.detections_pub.publish(detections_msg)
 
-        result_image_msg = self.cv_bridge.cv2_to_imgmsg(result_image, "bgr8")
-        result_image_msg.header.stamp = self.get_clock().now().to_msg()
-        result_image_msg.header.frame_id = msg.header.frame_id
-        self.result_image_pub.publish(result_image_msg)
+            if publish_result_image:
+                result_image_msg = self.cv_bridge.cv2_to_imgmsg(result_image, "bgr8")
+                result_image_msg.header.stamp = self.get_clock().now().to_msg()
+                result_image_msg.header.frame_id = msg.header.frame_id
+                self.result_image_pub.publish(result_image_msg)
 
     def reload_known_faces_callback(
         self, request: std_srvs.srv.Empty.Request, response: std_srvs.srv.Empty.Response
