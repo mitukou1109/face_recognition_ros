@@ -38,18 +38,13 @@ class FaceIdentifier(rclpy.node.Node):
         self.declare_parameter("resize_height", 320)
 
         self.detections_pub = self.create_publisher(
-            vision_msgs.msg.Detection2DArray, "~/detections", 5
+            vision_msgs.msg.Detection2DArray, "~/detections", 1
         )
         self.result_image_pub = self.create_publisher(
-            sensor_msgs.msg.Image, "~/result_image", 5
+            sensor_msgs.msg.Image, "~/result_image", 1
         )
-        source_image_sub_qos = rclpy.qos.qos_profile_sensor_data
-        source_image_sub_qos.depth = 1
         self.source_image_sub = self.create_subscription(
-            sensor_msgs.msg.Image,
-            "/image_raw",
-            self.source_image_callback,
-            source_image_sub_qos,
+            sensor_msgs.msg.Image, "/image_raw", self.source_image_callback, 1
         )
 
         self.reload_known_faces_srv = self.create_service(
