@@ -107,15 +107,15 @@ class FaceIdentifier(rclpy.node.Node):
                         )
                         cv2.rectangle(
                             result_image,
-                            (face_location[3], face_location[2] - 50),
-                            (face_location[1], face_location[2]),
+                            (face_location[3], face_location[2]),
+                            (face_location[1], face_location[2] + 50),
                             color=self.PALETTE[best_match_index % len(self.PALETTE)],
                             thickness=cv2.FILLED,
                         )
                         cv2.putText(
                             result_image,
                             face_name,
-                            (face_location[3], face_location[2] - 5),
+                            (face_location[3], face_location[2] + 45),
                             fontFace=cv2.FONT_HERSHEY_DUPLEX,
                             fontScale=1.5,
                             color=(0, 0, 0),
