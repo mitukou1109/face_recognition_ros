@@ -139,6 +139,9 @@ class FaceIdentifier(rclpy.node.Node):
         return response
 
     def load_known_faces(self) -> None:
+        self.known_face_encodings = []
+        self.known_face_names = []
+
         for known_face_image_file in glob.glob(
             os.path.join(
                 get_package_share_directory("face_recognition_ros"),
