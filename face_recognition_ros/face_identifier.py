@@ -154,15 +154,14 @@ class FaceIdentifier(rclpy.node.Node):
                 known_face_image = face_recognition.load_image_file(
                     known_face_image_file
                 )
+                self.known_face_encodings.append(
+                    face_recognition.face_encodings(known_face_image)[0]
+                )
+                self.known_face_names.append(
+                    os.path.splitext(os.path.basename(known_face_image_file))[0]
+                )
             except:
                 continue
-
-            self.known_face_encodings.append(
-                face_recognition.face_encodings(known_face_image)[0]
-            )
-            self.known_face_names.append(
-                os.path.splitext(os.path.basename(known_face_image_file))[0]
-            )
 
         if self.known_face_names:
             self.get_logger().info(f"Loaded known faces: {self.known_face_names}")
