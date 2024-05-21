@@ -35,7 +35,11 @@ class FaceIdentifier(rclpy.node.Node):
 
         self.cv_bridge = cv_bridge.CvBridge()
 
-        self.declare_parameter("publish_result_image", True)
+        self.publish_result_image = (
+            self.declare_parameter("publish_result_image", True)
+            .get_parameter_value()
+            .bool_value
+        )
         self.declare_parameter("resize_height", 320)
 
         self.detections_pub = self.create_publisher(
@@ -57,11 +61,6 @@ class FaceIdentifier(rclpy.node.Node):
         result_image = image.copy()
 
         if self.known_face_encodings:
-            publish_result_image = (
-                self.get_parameter("publish_result_image")
-                .get_parameter_value()
-                .bool_value
-            )
             resize_ratio = (
                 self.get_parameter("resize_height").get_parameter_value().integer_value
                 / image.shape[0]
@@ -97,7 +96,7 @@ class FaceIdentifier(rclpy.node.Node):
                         vision_msgs.msg.Detection2D(bbox=bbox, id=face_name)
                     )
 
-                    if publish_result_image:
+                    if self.publish_result_image:
                         cv2.rectangle(
                             result_image,
                             (face_location[1], face_location[0]),
@@ -126,7 +125,7 @@ class FaceIdentifier(rclpy.node.Node):
             detections_msg.header.frame_id = msg.header.frame_id
             self.detections_pub.publish(detections_msg)
 
-            if publish_result_image:
+            if self.publish_result_image:
                 result_image_msg = self.cv_bridge.cv2_to_imgmsg(result_image, "bgr8")
                 result_image_msg.header.stamp = self.get_clock().now().to_msg()
                 result_image_msg.header.frame_id = msg.header.frame_id
