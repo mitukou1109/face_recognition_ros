@@ -49,7 +49,7 @@ class FaceIdentifier(rclpy.node.Node):
             sensor_msgs.msg.Image, "~/result_image", 1
         )
         self.source_image_sub = self.create_subscription(
-            sensor_msgs.msg.Image, "/image_raw", self.source_image_callback, 1
+            sensor_msgs.msg.Image, "/image_raw", self.source_image_callback, 10
         )
 
         self.reload_known_faces_srv = self.create_service(
